@@ -1,6 +1,8 @@
-import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View, Animated } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ScreenWrapper from '../components/ScreenWrapper';
 import { useTheme } from '../lib/ThemeContext';
+import { useAnimatedTextColor, useAnimatedBackgroundColor } from '../lib/useAnimatedThemeColor';
 
 export default function AppearanceScreen() {
     const {
@@ -11,48 +13,95 @@ export default function AppearanceScreen() {
         updateTextScale,
         isHighContrast,
         toggleHighContrast,
+        themeAnimationProgress,
     } = useTheme();
+
+    // Animated colors for smooth transitions
+    const headerTextColor = useAnimatedTextColor('#121212', '#FFFFFF');
+    const sectionBgColor = useAnimatedBackgroundColor('#FFFFFF', '#1E1E1E');
+    const sectionTitleColor = useAnimatedTextColor('#121212', '#FFFFFF');
+    const labelColor = useAnimatedTextColor('#121212', '#FFFFFF');
+    const subLabelColor = useAnimatedTextColor('#555555', '#B0B0B0');
+
+    // Icon rotation animation (sun/moon rotation)
+    const iconRotation = themeAnimationProgress.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '180deg'],
+    });
+
+    // Icon scale animation (subtle pop effect)
+    const iconScale = themeAnimationProgress.interpolate({
+        inputRange: [0, 0.5, 1],
+        outputRange: [1, 0.8, 1],
+    });
 
     return (
         <ScreenWrapper>
             <ScrollView contentContainerStyle={styles.container}>
-                <Text style={[styles.header, { color: theme.colors.text }]}>
+                <Animated.Text
+                    style={[
+                        styles.header,
+                        headerTextColor,
+                    ]}
+                >
                     Appearance & Accessibility
-                </Text>
+                </Animated.Text>
 
                 {/* Theme Section */}
-                <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-                    <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Theme</Text>
+                <Animated.View style={[styles.section, sectionBgColor]}>
+                    <Animated.Text style={[styles.sectionTitle, sectionTitleColor]}>
+                        Theme
+                    </Animated.Text>
                     <View style={styles.row}>
                         <View style={{ flex: 1 }}>
-                            <Text style={[styles.label, { color: theme.colors.text }]}>
+                            <Animated.Text style={[styles.label, labelColor]}>
                                 Dark Mode
-                            </Text>
-                            <Text style={[styles.subLabel, { color: theme.colors.textSecondary }]}>
+                            </Animated.Text>
+                            <Animated.Text style={[styles.subLabel, subLabelColor]}>
                                 Easier on the eyes in low light
-                            </Text>
+                            </Animated.Text>
                         </View>
-                        <Switch
-                            value={isDarkMode}
-                            onValueChange={toggleTheme}
-                            trackColor={{ false: '#767577', true: theme.colors.primary }}
-                        />
+                        <View style={styles.themeToggleContainer}>
+                            <Animated.View
+                                style={[
+                                    styles.iconContainer,
+                                    {
+                                        transform: [
+                                            { rotate: iconRotation },
+                                            { scale: iconScale },
+                                        ],
+                                    },
+                                ]}
+                            >
+                                <MaterialCommunityIcons
+                                    name={isDarkMode ? 'moon-waning-crescent' : 'white-balance-sunny'}
+                                    size={24}
+                                    color={theme.colors.primary}
+                                />
+                            </Animated.View>
+                            <Switch
+                                value={isDarkMode}
+                                onValueChange={toggleTheme}
+                                trackColor={{ false: '#767577', true: theme.colors.primary }}
+                            />
+                        </View>
                     </View>
-                </View>
+                </Animated.View>
 
                 {/* Text Size Section */}
-                <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-                    <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                <Animated.View style={[styles.section, sectionBgColor]}>
+                    <Animated.Text style={[styles.sectionTitle, sectionTitleColor]}>
                         Text Size
-                    </Text>
-                    <Text
+                    </Animated.Text>
+                    <Animated.Text
                         style={[
                             styles.subLabel,
-                            { color: theme.colors.textSecondary, marginBottom: 15 },
+                            subLabelColor,
+                            { marginBottom: 15 },
                         ]}
                     >
                         Adjust the reading size of the app
-                    </Text>
+                    </Animated.Text>
 
                     <View style={styles.scaleContainer}>
                         <TouchableOpacity
@@ -60,6 +109,9 @@ export default function AppearanceScreen() {
                             style={[
                                 styles.scaleBtn,
                                 textScale === 0.85 && { backgroundColor: theme.colors.primary },
+                                {
+                                    borderColor: isDarkMode ? '#444' : '#ccc',
+                                },
                             ]}
                         >
                             <Text
@@ -76,6 +128,9 @@ export default function AppearanceScreen() {
                             style={[
                                 styles.scaleBtn,
                                 textScale === 1 && { backgroundColor: theme.colors.primary },
+                                {
+                                    borderColor: isDarkMode ? '#444' : '#ccc',
+                                },
                             ]}
                         >
                             <Text
@@ -92,6 +147,9 @@ export default function AppearanceScreen() {
                             style={[
                                 styles.scaleBtn,
                                 textScale === 1.15 && { backgroundColor: theme.colors.primary },
+                                {
+                                    borderColor: isDarkMode ? '#444' : '#ccc',
+                                },
                             ]}
                         >
                             <Text
@@ -105,29 +163,30 @@ export default function AppearanceScreen() {
                         </TouchableOpacity>
                     </View>
 
-                    <Text
+                    <Animated.Text
                         style={[
                             styles.preview,
-                            { color: theme.colors.text, fontSize: 16 * textScale },
+                            labelColor,
+                            { fontSize: 16 * textScale },
                         ]}
                     >
                         Preview: This is how your event details will look.
-                    </Text>
-                </View>
+                    </Animated.Text>
+                </Animated.View>
 
                 {/* Accessibility Section */}
-                <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-                    <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                <Animated.View style={[styles.section, sectionBgColor]}>
+                    <Animated.Text style={[styles.sectionTitle, sectionTitleColor]}>
                         Accessibility
-                    </Text>
+                    </Animated.Text>
                     <View style={styles.row}>
                         <View style={{ flex: 1 }}>
-                            <Text style={[styles.label, { color: theme.colors.text }]}>
+                            <Animated.Text style={[styles.label, labelColor]}>
                                 High Contrast
-                            </Text>
-                            <Text style={[styles.subLabel, { color: theme.colors.textSecondary }]}>
+                            </Animated.Text>
+                            <Animated.Text style={[styles.subLabel, subLabelColor]}>
                                 Increase color contrast for better visibility
-                            </Text>
+                            </Animated.Text>
                         </View>
                         <Switch
                             value={isHighContrast}
@@ -135,7 +194,7 @@ export default function AppearanceScreen() {
                             trackColor={{ false: '#767577', true: theme.colors.primary }}
                         />
                     </View>
-                </View>
+                </Animated.View>
             </ScrollView>
         </ScreenWrapper>
     );
@@ -150,6 +209,18 @@ const styles = StyleSheet.create({
     label: { fontSize: 16, fontWeight: '600' },
     subLabel: { fontSize: 14, marginTop: 4 },
 
+    themeToggleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    iconContainer: {
+        width: 32,
+        height: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
     scaleContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -161,7 +232,6 @@ const styles = StyleSheet.create({
         height: 60,
         borderRadius: 30,
         borderWidth: 1,
-        borderColor: '#ccc',
         alignItems: 'center',
         justifyContent: 'center',
     },
