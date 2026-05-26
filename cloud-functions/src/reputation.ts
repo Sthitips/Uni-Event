@@ -111,13 +111,11 @@ export const refreshTopContributorsLeaderboard = functions.pubsub
  * Client can load the first 10 contributors and then request more using
  * lastPoints, lastUserId, and startRank.
  */
-export const getTopContributors = functions.https.onCall(async data => {
-    const requestedLimit = data === null || data === void 0 ? void 0 : data.limit;
-    if (requestedLimit !== undefined &&
-        (!Number.isInteger(requestedLimit) || requestedLimit < 1 || requestedLimit > 25)) {
-        throw new functions.https.HttpsError('invalid-argument', 'limit must be an integer between 1 and 25.');
+export const getTopContributors = functions.https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'The function must be called while authenticated.');
     }
-    const limit = requestedLimit ?? 10;
+    const limit = Math.min(data?.limit || 10, 25);
     const lastPoints = data?.lastPoints;
     const lastUserId = data?.lastUserId;
     const startRank = data?.startRank || 1;
