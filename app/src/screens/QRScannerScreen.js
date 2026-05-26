@@ -2,7 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { Camera } from 'expo-camera';
 import { addDoc, collection, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+    Dimensions,
+    Platform,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+    Share,
+    Alert,
+} from 'react-native';
 import ScreenWrapper from '../components/ScreenWrapper';
 import WebQRScanner from '../components/WebQRScanner';
 import { useAuth } from '../lib/AuthContext';
@@ -103,6 +112,59 @@ export default function QRScannerScreen({ navigation, route }) {
         }
     };
 
+    const handleCopyLink = async () => {
+        try {
+            await Clipboard.setStringAsync(eventUrl);
+            setCopied(true);
+
+            setTimeout(() => {
+                setCopied(false);
+            }, 2000);
+
+        } catch (error) {
+            Alert.alert(
+                'Copy Failed',
+                error?.message || 'Unable to copy event link.'
+            );
+        }
+    }
+
+    const handleShare = async () => {
+        const message = `Join ${eventTitle}\n${eventUrl}`;
+        try {
+            if (Platform.OS === "web") {
+                if (navigator.share) {
+                    await navigator.share({
+                        title: eventTitle,
+                        text: message,
+                        url: eventUrl,
+                    })
+                }
+                else {
+                    await Clipboard.setStringAsync(message);
+
+                    Alert.alert(
+                        'Copied!',
+                        'Event link copied to clipboard. You can now share it manually.'
+                    );
+                }
+
+                return;
+            }
+
+            await Share.share({
+                message,
+                url: eventUrl,
+                title: eventTitle,
+            });
+        } catch (error) {
+            Alert.alert(
+                'Share Failed',
+                error?.message || 'Unable to share event link.'
+            );
+        }
+    }
+
     if (hasPermission === null) {
         return (
             <View style={styles.container}>
@@ -143,6 +205,27 @@ export default function QRScannerScreen({ navigation, route }) {
                 <View style={styles.overlayFrame}>
                     <View style={styles.scanFrame} />
                 </View>
+            </View>
+
+            <View style={styles.shareContainer}>
+                <TouchableOpacity
+                    style={[
+                        styles.shareButton,
+                        copied && { backgroundColor: '#0bdd43' }
+                    ]}
+                    onPress={handleCopyLink}
+                >
+                    <Ionicons name="copy-outline" size={20} color="#fff" />
+                    <Text style={styles.shareButtonText}>{copied ? "Copied!" : "Copy Link"}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.shareButton}
+                    onPress={handleShare}
+                >
+                    <Ionicons name="share-social-outline" size={20} color="#fff" />
+                    <Text style={styles.shareButtonText}>Share</Text>
+                </TouchableOpacity>
             </View>
 
             {/* Result Modal / Feedback */}
@@ -242,6 +325,26 @@ const styles = StyleSheet.create({
     resultMessage: { fontSize: 16, textAlign: 'center', marginTop: 5, marginBottom: 20 },
     actionBtn: { paddingHorizontal: 40, paddingVertical: 12, borderRadius: 25 },
     actionBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+    shareContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 12,
+        paddingVertical: 16,
+        backgroundColor: '#111',
+    },
+    shareButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        backgroundColor: "#333",
+        paddingHorizontal: 18,
+        paddingVertical: 12,
+        borderRadius: 12,
+    },
+    shareButtonText: {
+        color: '#fff',
+        fontWeight: '600',
+    },
 });
 
 QRScannerScreen.propTypes = {
