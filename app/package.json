@@ -50,11 +50,10 @@
     "expo-barcode-scanner": "~12.5.3",
     "expo-blur": "~12.4.1",
     "expo-camera": "~13.4.4",
-    "expo-clipboard": "^56.0.3",
     "expo-crypto": "~12.4.1",
     "expo-device": "~5.4.0",
     "expo-file-system": "~15.4.5",
-    "expo-image-picker": "~14.3.2",
+    "expo-image-picker": "~17.0.10",
     "expo-linear-gradient": "~12.3.0",
     "expo-linking": "~5.0.0",
     "expo-navigation-bar": "~2.3.0",
@@ -72,7 +71,9 @@
     "react-dom": "18.2.0",
     "react-native": "0.72.10",
     "react-native-chart-kit": "^6.12.0",
+    "react-native-confetti-cannon": "^1.5.2",
     "react-native-gesture-handler": "~2.12.0",
+    "react-native-maps": "1.7.1",
     "react-native-qrcode-svg": "^6.3.21",
     "react-native-ratings": "^8.1.0",
     "react-native-reanimated-carousel": "^4.0.3",
@@ -80,7 +81,8 @@
     "react-native-screens": "~3.22.0",
     "react-native-svg": "13.9.0",
     "react-native-web": "~0.19.6",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "expo-clipboard": "~4.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
