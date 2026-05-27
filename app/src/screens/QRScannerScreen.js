@@ -18,18 +18,19 @@ import { useAuth } from '../lib/AuthContext';
 import { db } from '../lib/firebaseConfig';
 import { useTheme } from '../lib/ThemeContext';
 import PropTypes from 'prop-types';
+import * as Clipboard from "expo-clipboard";
 
 const { width } = Dimensions.get('window');
 
 export default function QRScannerScreen({ navigation, route }) {
-    const { eventId, eventTitle } = route.params;
+    const { eventId, eventTitle, eventUrl } = route.params ?? {};
     const { user } = useAuth();
     const { theme } = useTheme();
 
     const [hasPermission, setHasPermission] = useState(null);
     const [scanned, setScanned] = useState(false);
     const [scanResult, setScanResult] = useState(null); // { status: 'success' | 'error', message: '' }
-
+    const [copied, setCopied] = useState(false);
     useEffect(() => {
         if (Platform.OS !== 'web') {
             (async () => {
@@ -113,6 +114,10 @@ export default function QRScannerScreen({ navigation, route }) {
     };
 
     const handleCopyLink = async () => {
+        if (!eventUrl) {
+            Alert.alert('Missing Link', 'Event URL is unavailable.');
+            return;
+       }
         try {
             await Clipboard.setStringAsync(eventUrl);
             setCopied(true);
@@ -130,6 +135,10 @@ export default function QRScannerScreen({ navigation, route }) {
     }
 
     const handleShare = async () => {
+        if (!eventUrl) {
+           Alert.alert('Missing Link', 'Event URL is unavailable.');
+            return;
+        }
         const message = `Join ${eventTitle}\n${eventUrl}`;
         try {
             if (Platform.OS === "web") {
